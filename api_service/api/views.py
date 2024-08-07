@@ -60,20 +60,24 @@ class StockView(APIView):
         except requests.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class HistoryView(generics.ListAPIView):
     """
     Returns queries made by the current user.
     """
-    serializer_class = UserRequestHistorySerializer
+
     permission_classes = [IsAuthenticated]
+    serializer_class = UserRequestHistorySerializer
 
     def get_queryset(self):
         return UserRequestHistory.objects.filter(user=self.request.user).order_by('-date')
+
 
 class StatsView(APIView):
     """
     Allows superusers to view the most queried stocks.
     """
+    
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -86,7 +90,7 @@ class StatsView(APIView):
                       .annotate(times_requested=Count('symbol'))
                       .order_by('-times_requested')[:5])
 
-        # Format the response in the desired format
+        # Response formatted in the desired format
         formatted_response = [
             {"stock": stock['symbol'].lower(), "times_requested": stock['times_requested']}
             for stock in top_stocks

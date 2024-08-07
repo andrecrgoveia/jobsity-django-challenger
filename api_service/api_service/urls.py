@@ -10,12 +10,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+
 urlpatterns = [
     path('stock', api_views.StockView.as_view()),
     path('history', api_views.HistoryView.as_view()),
     path('stats', api_views.StatsView.as_view()),
     path('admin', admin.site.urls),
-    # Simple JWT urls
+    # Developer's note: URLs for Simple JWT authentication endpoints.
+    # These endpoints allow users to obtain and refresh JWT tokens.
     path('token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
 ]

@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-from decouple import config, Csv
-
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -14,14 +12,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = 'b!+q)h#vk3lz+lep2@d5=t*m7$grwtkl_(k-f9bt@75k-=omn4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True
 
-APPEND_SLASH = config('DEBUG', default=False, cast=bool)
+APPEND_SLASH = False
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
+# Developer's note: Allowing all hosts here is just for development ease.
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -128,7 +127,7 @@ REST_FRAMEWORK = {
 }
 
 
-# Simples JWT Settings
+# Developer's note: Configuration for Simple JWT.
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),

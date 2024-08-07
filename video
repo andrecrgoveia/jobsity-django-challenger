@@ -1,0 +1,132 @@
+    • Stockview
+    • Extracting the Stock Code:
+    • stock_code = request.query_params.get('q')
+    • What it does: This line extracts the stock code from the query parameters of the GET request (e.g., ?q=aapl.us).
+    • Why it's necessary: The stock code is the key piece of information needed to query the stock data from the external service.
+    • Validation of Stock Code:
+    • if not stock_code:
+    • What it does: Checks if the stock code was provided in the request.
+    • Why it's necessary: If the stock code is missing, the request cannot be processed, so an error response is returned.
+    • Error Handling: Returns a 400 Bad Request status with an error message if the stock code is not provided.
+    • Constructing the Stock Service URL:
+    • stock_service_url = f'http://0.0.0.0:8001/stock?q={stock_code}'
+    • What it does: Constructs the URL to the stock_service using the provided stock code.
+    • Why it's necessary: The stock_service is an internal service responsible for querying the external API for stock data. The URL needs to include the stock code to retrieve the correct data.
+    • Making the Request to Stock Service:
+    • stock_service_response = requests.get(stock_service_url)
+    • What it does: Sends a GET request to the stock_service to fetch the stock data.
+    • Why it's necessary: This is the core operation of this view, where the actual stock data is retrieved.
+    • Handling HTTP Errors:
+    • stock_service_response.raise_for_status()
+    • What it does: Checks if the response from the stock_service indicates a successful request. If the request failed (e.g., the stock service is down, or the stock code is invalid), an exception is raised.
+    • Error Handling: Catches any request-related exceptions and returns a 500 Internal Server Error status with the error message if something goes wrong with the request.
+    • Validating the Response Data:
+    • What it does: Ensures that all necessary fields (name, symbol, open, high, low, close) are present in the response from the stock_service.
+    • Why it's necessary: This validation step is crucial to ensure that the data returned is complete and can be reliably used. Incomplete data could lead to errors or misleading information.
+    • Error Handling: If the required fields are missing, the view returns a 500 Internal Server Error with a message indicating the issue.
+    • Saving the Request to History:
+    • What it does: Creates a UserRequestHistory record in the database, associating the stock query with the authenticated user.
+    • Why it's necessary: This allows users to later retrieve their query history, and also supports the stats feature for superusers. It involves:
+        ◦ Capturing the current date and time using timezone.now().
+        ◦ Storing all relevant stock data.
+        ◦ Associating the query with the request.user.
+    • Persistence: This operation ensures that user queries are stored persistently in the database.
+    • Returning the Stock Data:
+    • return Response(stock_data)
+    • What it does: Sends the retrieved stock data back to the client as a JSON response.
+    • Why it's necessary: This is the final step where the user receives the requested information.
+    • Exception Handling:
+    • The entire request to the stock_service is wrapped in a try...except block to handle any network-related issues or exceptions raised by the requests library.
+    • Error Handling: If an exception occurs, it catches the error and returns a 500 Internal Server Error with a message describing the issue.
+
+History
+    • What it does: This method overrides the default get_queryset() method provided by ListAPIView to filter the query results.
+    • Query Logic:
+        ◦ UserRequestHistory.objects.filter(user=self.request.user): Filters the UserRequestHistory model to only include records where the user field matches the currently authenticated user (self.request.user).
+        ◦ order_by('-date'): Orders the filtered records by date in descending order, meaning the most recent queries appear first.
+    • Why it's necessary: The view is intended to display the history of stock queries made by the user. Filtering by self.request.user ensures that users only see their own query history, not those of other users.
+
+Stats
+Superuser Check:
+    • if not request.user.is_superuser:
+    • What it does: This line checks whether the current user is a superuser.
+    • Why it's necessary: The statistics provided by this view are intended only for superusers, who typically have administrative privileges. If a non-superuser attempts to access this endpoint, the request is denied.
+    • Error Handling: If the user is not a superuser, the view returns a 403 Forbidden status with an error message indicating that the user does not have the required permissions.
+    • Querying the Database:
+    • Purpose: The next step involves querying the UserRequestHistory model to gather data about the most queried stocks.
+    • Query Logic:
+        ◦ UserRequestHistory.objects.values('symbol'): This returns a queryset of dictionaries containing the symbol field from the UserRequestHistory records.
+        ◦ .annotate(times_requested=Count('symbol')): This adds a times_requested field to each dictionary, representing the count of how many times each stock symbol has been requested.
+        ◦ .order_by('-times_requested')[:5]: Orders the queryset by the times_requested field in descending order and limits the results to the top 5 most queried stocks.
+    • Why it's necessary: Aggregating and counting the requests allows the view to generate the statistics required by the endpoint, showing the most popular stocks based on user queries.
+    • Formatting the Response:
+    • Purpose: The data retrieved from the database needs to be formatted into a JSON response that is easy to understand.
+    • Formatting Logic:
+        ◦ The list comprehension iterates over the top_stocks queryset, creating a list of dictionaries. Each dictionary contains the stock symbol in lowercase and the number of times it was requested.
+    • Why it's necessary: Proper formatting ensures that the response is clear and consistent, making it easier for the client (e.g., a dashboard or reporting tool) to consume and display the data.
+    • Returning the Response:
+    • return Response(formatted_response)
+    • What it does: Returns the formatted list of top stocks as a JSON response to the client.
+    • Why it's necessary: This is the final step where the requested data is sent back to the client in the desired format.
+Logic
+Extracting the Stock Code:
+    • stock_code = request.query_params.get('q')
+    • What it does: Extracts the stock code from the query parameters of the incoming GET request (e.g., ?q=aapl.us).
+    • Why it's necessary: The stock code is required to query the specific stock data from the external API.
+    • Validation of Stock Code:
+    • if not stock_code:
+    • What it does: Checks if the stock code is provided in the query parameters.
+    • Why it's necessary: If the stock code is missing, the request cannot proceed, so an error response is returned.
+    • Error Handling: Returns a 400 Bad Request status with an error message if the stock code is not provided.
+    • Constructing the External API URL:
+    • url = f'https://stooq.com/q/l/?s={stock_code}&f=sd2t2ohlcvn&h&e=csv'
+    • What it does: Constructs the URL for the Stooq API using the provided stock code.
+    • Why it's necessary: The Stooq API requires the stock code to return the relevant stock data in CSV format. The URL is dynamically generated based on the query parameters.
+    • Making the External API Request:
+    • response = requests.get(url)
+    • What it does: Sends a GET request to the Stooq API to retrieve the stock data.
+    • Why it's necessary: This is the core operation of the view, where the external stock data is fetched.
+    • Handling HTTP Errors:
+    • response.raise_for_status()
+    • What it does: Checks if the HTTP request to the Stooq API was successful. If the API returns an error (e.g., stock not found, API down), an exception is raised.
+    • Error Handling: If the request fails, the exception is caught and an error response with status 500 Internal Server Error is returned.
+    • Parsing the CSV Response:
+    • lines = response.text.splitlines()
+    • What it does: Splits the response text into individual lines, which are expected to be in CSV format.
+    • Why it's necessary: The Stooq API returns data in CSV format, so the response needs to be parsed accordingly.
+    • Validation: Checks if the CSV response contains enough lines and columns to ensure it's a valid and expected format.
+    • Error Handling: If the CSV format is invalid or incomplete, the view returns a 500 Internal Server Error with an appropriate error message.
+    • Extracting Stock Data:
+    • What it does: The view extracts relevant stock information (e.g., name, symbol, open, high, low, close prices) from the parsed CSV data.
+    • Why it's necessary: After parsing the CSV, the data needs to be extracted and formatted into a dictionary that can be easily converted to JSON.
+    • Error Handling: Ensures that the CSV has the expected number of fields. If not, it returns an error response.
+    • Returning the Stock Data:
+    • return Response(stock_data)
+    • What it does: Sends the extracted stock data as a JSON response to the client.
+    • Why it's necessary: This is the final step where the requested data is returned in a structured and usable format.
+    • Exception Handling:
+    • Purpose: The entire request and parsing logic is wrapped in a try...except block to handle any exceptions that may occur during the HTTP request or data processing.
+    • Error Handling: If an exception occurs (e.g., network error, unexpected response format), it catches the error and returns a 500 Internal Server Error with the error message.
+
+[
+	{
+		"stock": "msft.us",
+		"times_requested": 9
+	},
+	{
+		"stock": "zip.us",
+		"times_requested": 6
+	},
+	{
+		"stock": "aapl.us",
+		"times_requested": 5
+	},
+	{
+		"stock": "bdl.us",
+		"times_requested": 4
+	},
+	{
+		"stock": "mhd.us",
+		"times_requested": 2
+	}
+]

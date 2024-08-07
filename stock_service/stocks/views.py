@@ -30,7 +30,7 @@ class StockView(APIView):
             if len(lines) < 2:
                 return Response({"error": "Invalid response from stock API"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            # Extract stock data (this assumes the CSV response is in a specific format)
+            # Extract stock data
             data = lines[1].split(',')
             if len(data) < 9:
                 return Response({"error": "Unexpected CSV format"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

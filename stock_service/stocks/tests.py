@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 class StockViewTests(APITestCase):
     def setUp(self):
-        self.url = '/stock'  # URL direta sem usar `reverse`
+        self.url = '/stock'
 
     @patch('stocks.views.requests.get')
     def test_successful_response(self, mock_get):

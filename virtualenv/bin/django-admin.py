@@ -1,4 +1,4 @@
-#!/home/andrecastelo/Downloads/jobsity/django-challenge/virtualenv/bin/python3
+#!/home/andrecastelo/development/django-challenge/virtualenv/bin/python3
 # When the django-admin.py deprecation ends, remove this script.
 import warnings
 
