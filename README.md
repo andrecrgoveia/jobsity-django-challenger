@@ -64,6 +64,13 @@ The stock service has been implemented according to the described requirements:
 4. The API service saves the response from the stock service in the database.
 5. The data is formatted and returned to the user.
 
+## Optional Features
+
+The following optional features have been implemented according to the described requirements:
+
+* **Unit Tests:** Unit tests have been added for both the bot and the main app to ensure functionality and reliability.
+* **JWT Authentication:** Basic Authentication has been replaced with JWT (JSON Web Token) for enhanced security. The authentication mechanism has been updated to use JWT for all endpoints.
+
 ## How to run the project
 * Create a virtualenv: `python -m venv virtualenv` and activate it `. virtualenv/bin/activate`.
 * Install dependencies: `pip install -r requirements.txt`
