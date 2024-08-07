@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-from decouple import config, Csv
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,14 +10,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = '8lry=eih0=6unsro-d)x7%l)e3&dlvb_aclwnzl%6+!gj6q8vz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True
 
-APPEND_SLASH = config('DEBUG', default=False, cast=bool)
+APPEND_SLASH = False
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
+# Developer's note: Allowing all hosts here is just for development ease.
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -60,7 +59,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'stock_service.wsgi.application'
 
 
-# Database in memory for tests
+# Developer's note: Using an in-memory database for testing purposes.
 import sys
 if 'test' in sys.argv:
     DATABASES = {
@@ -69,7 +68,6 @@ if 'test' in sys.argv:
             'NAME': ':memory:',
         }
     }
-
 
 
 # Password validation
@@ -116,8 +114,3 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
 }
-
-
-# Celery settings
-CELERY_BROKER_URL = 'amqp://rabbitmq'
-CELERY_RESULT_BACKEND = 'rpc://'
